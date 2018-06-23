@@ -1,0 +1,30 @@
+{
+  "name": "javascript-fp",
+  "version": "1.0.0",
+  "description": "functional programming for JavaScript(TypeScript)",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keitakn/javascript-fp.git"
+  },
+  "author": "keitakn",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/keitakn/javascript-fp/issues"
+  },
+  "homepage": "https://github.com/keitakn/javascript-fp#readme",
+  "private": true,
+  "devDependencies": {
+    "@types/jest": "^23.1.1",
+    "jest": "^23.1.0",
+    "prettier": "^1.13.5",
+    "ts-jest": "^22.4.6",
+    "tslint": "^5.10.0",
+    "tslint-config-airbnb": "^5.9.2",
+    "tslint-config-prettier": "^1.13.0",
+    "tslint-plugin-prettier": "^1.3.0",
+    "typescript": "^2.9.2"
+  }
+}
