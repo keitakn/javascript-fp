@@ -1,4 +1,4 @@
-import { Chapter1 } from "src/chapter1/Chapter1";
+import { Chapter1 } from "../../src/chapter1/Chapter1";
 
 /**
  * 第1章 関数型で思考する の平均値をもとめる関数のテストコード
