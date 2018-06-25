@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "esnext",
+    "module": "commonjs",
     "moduleResolution": "node",
     "target": "es2017",
     "inlineSourceMap": true,
@@ -9,7 +9,6 @@
     "removeComments": true,
     "strict": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "noFallthroughCasesInSwitch": true,
