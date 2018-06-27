@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "es2015",
     "moduleResolution": "node",
-    "target": "es2017",
+    "target": "es5",
     "inlineSourceMap": true,
     "inlineSources": true,
     "outDir": "dist",
     "removeComments": true,
     "strict": true,
     "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "noFallthroughCasesInSwitch": true,
@@ -23,8 +24,7 @@
       "dom"
     ],
     "types": [
-      "node",
-      "jest"
+      "node"
     ]
   },
   "exclude": [

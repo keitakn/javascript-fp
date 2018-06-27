@@ -63,3 +63,6 @@ typings/
 # IDEA setting files
 .idea
 javascript-fp.iml
+
+# TypeScript output file
+dist

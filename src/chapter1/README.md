@@ -143,3 +143,33 @@ const average = divide(270, 3);
 `test/chapter1/average.spec.ts` に対応するテストコードがあるので試しに書き換えてもテストが通る事が分かると思う。
 
 このように全ての関数が参照透過性を持つように設計すると、プログラムはシステム的、数学的な方法で把握出来るようになる。
+
+## データの不変性を維持する
+
+関数型プログラミングでは一度生成したデータは変更出来ないようにする事がベストである。
+
+これはオブジェクト指向におけるimmutableオブジェクトと同様の感覚で現代では一般的になった考え方だと言えるだろう。
+
+ただ残念な事にJavaScriptの標準言語仕様だけでこれを徹底するのは難しい。
+
+```typescript
+const sortDesc = (array: number[]) => {
+  return array.sort((a: number, b: number) => {
+    return b - a;
+  });
+};
+```
+
+例えばこの関数、これは配列をソートする単純な関数だが、一見副作用がなさそうなこれも実は元の配列自身のindexを更新してしまう。
+
+```typescript
+const array = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+console.log(sortDesc(array)); // [ 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
+console.log(array); // [ 9, 8, 7, 6, 5, 4, 3, 2, 1 ]
+```
+
+ECMAScript 2015から定義された `const` で変数の上書きは出来なくなったが、配列の操作等は可能である。
+
+これは言語仕様上どうしようもない。
+
+実戦では [Ramda](https://ramdajs.com/) や [immutable](https://facebook.github.io/immutable-js/) 等の外部ライブラリを使ってカバーする必要があるだろう。
