@@ -1,6 +1,13 @@
 module.exports = {
   mode: "development",
-  entry: "./src/chapter1/main.ts",
+  entry: {
+    "public/js/chapter1": "./src/chapter1/main.ts",
+    "public/js/chapter2": "./src/chapter2/main.ts"
+  },
+  output: {
+    path: `${__dirname}/dist`,
+    filename: "[name].bundle.js"
+  },
   module: {
     rules: [
       {
