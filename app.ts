@@ -6,7 +6,7 @@ import Response = express.Response;
 const app = express();
 const port = 3000;
 
-app.use("/dist/public", express.static(`${__dirname}/public`));
+app.use("/public", express.static(`public`));
 
 app.engine('ejs', ejs.renderFile);
 
