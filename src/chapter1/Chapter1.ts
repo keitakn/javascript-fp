@@ -1,3 +1,13 @@
+import * as _ from "lodash";
+
+/**
+ * use Chapter1.search
+ */
+interface IStudent {
+  enrolled: number;
+  grade: number;
+}
+
 /**
  * 第1章 関数型で思考する
  */
@@ -52,5 +62,21 @@ export namespace Chapter1 {
    */
   export const average = (numbers: number[]): number => {
     return divide(total(numbers), size(numbers));
+  };
+
+  /**
+   * 検索する
+   * 2つの授業を受けており成績が100点の学生を検索
+   * サンプルなので検索条件は固定
+   *
+   * @param {IStudent[]} enrollments
+   * @returns {number}
+   */
+  export const search = (enrollments: IStudent[]) => {
+    return _.chain(enrollments)
+      .filter((student: IStudent) => student.enrolled > 1)
+      .map(_.property("grade"))
+      .mean()
+      .value();
   };
 }
