@@ -7,7 +7,7 @@ import { IPerson } from "../../src/domain/IPerson";
  */
 describe("Chapter2.immutable", () => {
   /**
-   * 不変オブジェクトを作成出来る事を確認する
+   * assocを使って不変オブジェクトを作成出来る事を確認する
    */
   it("should be able to create immutable objects using by assoc", () => {
     const originalAddress = {
