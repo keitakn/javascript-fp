@@ -1,6 +1,6 @@
 import { assoc, lens, path, set, assocPath, view } from "ramda";
-import { IAddress } from "../../src/domain/IAddress";
-import { IPerson } from "../../src/domain/IPerson";
+import { Address } from "../../src/domain/types/Address";
+import { Person } from "../../src/domain/types/Person";
 
 /**
  * 第2章 関数型言語としてのJavaScript 不変オブジェクトを作るテスト
@@ -26,13 +26,13 @@ describe("Chapter2.immutable", () => {
       address: originalAddress
     };
 
-    const newAddress = assoc<string, IAddress, string>(
+    const newAddress = assoc<string, Address, string>(
       "streetAddress",
       "1-7-1",
       originalAddress
     );
 
-    const newPerson = assoc<IAddress, IPerson, string>(
+    const newPerson = assoc<Address, Person, string>(
       "address",
       newAddress,
       originalPerson

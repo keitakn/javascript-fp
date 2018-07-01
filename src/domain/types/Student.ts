@@ -1,9 +1,9 @@
-import { IPerson } from "./IPerson";
+import { Person } from "./Person";
 
 /**
  * 学生を表すオブジェクトIF
  */
-export interface IStudent extends IPerson {
+export interface Student extends Person {
   /**
    * 学校
    */

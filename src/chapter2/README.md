@@ -62,7 +62,7 @@ originalAddress.country = "US";
 オブジェクトのインターフェースを以下のように定義する。
 
 ```typescript
-export interface IAddress {
+export interface Address {
   readonly country: string;
   readonly postalCode: string;
   readonly region: string;
@@ -74,7 +74,7 @@ export interface IAddress {
 以下のコードはコンパイルが通らない。
 
 ```typescript
-const originalAddress: IAddress = {
+const originalAddress: Address = {
   country: "JP",
   postalCode: "1000014",
   region: "東京都",

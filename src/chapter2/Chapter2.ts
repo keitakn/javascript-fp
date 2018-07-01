@@ -1,4 +1,4 @@
-import { IAddress } from "../domain/IAddress";
+import { Address } from "../domain/types/Address";
 
 /**
  * 第2章 関数型言語としてのJavaScript
@@ -9,12 +9,14 @@ export namespace Chapter2 {
    *
    * e.g. "JP 〒1000014 東京都東京都千代田区永田町１丁目７−１
    *
-   * @param {IAddress} address
+   * @param {Address} address
    * @returns {string}
    */
-  export const generateFormattedAddress = (address: IAddress) => {
+  export const generateFormattedAddress = (address: Address) => {
     return `${address.country} 〒${address.postalCode} ${address.region}${
       address.locality
     }${address.streetAddress}`;
   };
+
+
 }
