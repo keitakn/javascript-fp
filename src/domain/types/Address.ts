@@ -3,7 +3,7 @@
  *
  * @link http://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#AddressClaim
  */
-export interface IAddress {
+export interface Address {
   country: string;
   postalCode: string;
   region: string;
