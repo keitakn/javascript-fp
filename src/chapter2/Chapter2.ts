@@ -25,20 +25,12 @@ export namespace Chapter2 {
    *
    * @param {People} people
    * @param {Function} selector
+   * @returns {People}
    */
-  const selectPeople = (people: People, selector: Function) => {
-    return people
-      .map((person: Person) => {
-        if (selector(person)) {
-          return person;
-        }
-
-        // TODO 型定義が厳密に出来ていないので何とかしたいモナドを使えば解決しそうだが
-        return {};
-      })
-      .filter((person: any) => {
-        return Object.keys(person).length > 0;
-      });
+  const selectPeople = (people: People, selector: Function): People => {
+    return people.filter((person: Person) => {
+      return selector(person);
+    });
   };
 
   /**

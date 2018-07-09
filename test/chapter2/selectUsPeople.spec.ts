@@ -1,4 +1,4 @@
-import { Chapter2 } from "src/chapter2/Chapter2";
+import { Chapter2 } from "../../src/chapter2/Chapter2";
 
 /**
  * 第2章 関数型言語としてのJavaScript 国がUSの人々を選択する関数のテスト
