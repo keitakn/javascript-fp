@@ -1,4 +1,4 @@
-import { Chapter3 } from "src/chapter3/Chapter3";
+import { Chapter3 } from "../../src/chapter3/Chapter3";
 
 /**
  * 第3章 データ構造の数を減らし、操作の数を増やす 国コードの集計関数
