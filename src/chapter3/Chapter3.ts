@@ -58,6 +58,15 @@ export namespace Chapter3 {
   };
 
   /**
+   * 名でソートする
+   *
+   * @returns {string[]}
+   */
+  const sortAtgivenName = () => {
+    return ["givenName"];
+  };
+
+  /**
    * SQLライクな検索関数
    *
    * map() = SELECT
@@ -72,7 +81,7 @@ export namespace Chapter3 {
   export const sqlLikeSearch = (people: People): NameColumn[] => {
     return _.chain(people)
       .filter((person: Person) => isJapanesePeople(person))
-      .sortBy(people, ["givenName"])
+      .sortBy(people, sortAtgivenName())
       .map((person: Person) => selectNameColumn(person))
       .value();
   };
