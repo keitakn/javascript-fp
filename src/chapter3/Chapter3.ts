@@ -62,7 +62,7 @@ export namespace Chapter3 {
    *
    * @returns {string[]}
    */
-  const sortAtgivenName = () => {
+  const sortAtGivenName = () => {
     return ["givenName"];
   };
 
@@ -81,7 +81,7 @@ export namespace Chapter3 {
   export const sqlLikeSearch = (people: People): NameColumn[] => {
     return _.chain(people)
       .filter((person: Person) => isJapanesePeople(person))
-      .sortBy(people, sortAtgivenName())
+      .sortBy(people, sortAtGivenName())
       .map((person: Person) => selectNameColumn(person))
       .value();
   };
