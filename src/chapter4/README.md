@@ -50,3 +50,91 @@ return [false, "Input is not long!"];
 TypeScriptにはタプル型が存在するがあくまでも配列なので、注意して利用する必要がある。
 
 （参考）[TypeScriptの型入門 タプル型](https://qiita.com/uhyo/items/e2fdef2d3236b9bfe74a#%E3%82%BF%E3%83%97%E3%83%AB%E5%9E%8B)
+
+## カリー化
+
+カリー化を理解する為には通常のカリー化されていない関数の挙動を理解する必要がある。
+
+JavaScriptでは引数が足りない場合でも関数を呼び出せる。
+
+これは内部的に足りない引数が `undefined` で補われているからである。
+
+`Ramda` を使って説明する。
+
+例えば以下のような関数があったとする。
+
+これは引数が文字列型かどうかを調べる単純な関数である。
+
+```typescript
+import * as R from "ramda";
+
+const isString = (test: any) => {
+  return R.is(String, test);
+};
+```
+
+この関数には引数が必要である。
+
+しかし引数なしで実行しても `false` が返却される。
+
+足りない引数を `undefined` で補っているからである。
+
+この場合はちゃんとbooleanで返ってくるのでそんなに困らないかもしれない。
+
+しかし下記のような場合はどうだろう？
+
+```typescript
+const plus = (a: number, b: number) => {
+  return a + b;
+};
+```
+
+引数を2つ足すだけの単純な関数だ。
+
+`plus(1)` のように呼び出すと結果は `NaN` となる。
+
+この例は単純なのですぐに原因に気がつけるかもしれない、しかしもう少し複雑な関数だとデバッグに余計な時間が取られてしまうだろう。
+
+では先程の `plus` をカリー化してみる。
+
+```typescript
+import * as R from "ramda";
+
+const plus = R.curry((a: number, b: number) => {
+  return a + b;
+});
+```
+
+先程と同じように `plus(1)` で呼び出してみると、`Function` オブジェクトが返ってくる事が分かる。
+
+カリー化された関数はこのように引数が足りない場合、関数の実行を保留し足りない分の引数を受け取る新しい関数を返す。
+
+この性質を利用すると以下のような事が出来る。
+
+```typescript
+import * as R from "ramda";
+
+const plus = R.curry((a: number, b: number) => {
+  return a + b;
+});
+
+const plus10 = plus(10);
+
+// 結果は 11
+console.log(plus10(1));
+```
+
+このように汎用的な `plus` 関数を拡張してより特化した `plus10` 関数を簡単に作り出せる。
+
+このテクニックを利用するとオブジェクト指向でやっているファクトリパターンのような実装（`test/chapter4/findStudent.spec.ts` を参照）が可能になる。
+
+また `test/chapter4/logger.spec.ts` でやっているような再利用可能な関数テンプレートを作成出来る。
+
+このようにカリー化は関数型で設計する際に非常に重要なテクニックと言えるだろう。
+
+- （参考）[JavaScript ( 時々 TypeScript ) で学ぶ関数型プログラミングの基礎の基礎 #2 - カリー化について](https://tech.recruit-mp.co.jp/front-end/post-15885/)
+- （参考）[【JavaScript】部分適用とカリー化](https://qiita.com/To_BB/items/f2f73a218da322194f46)
+
+JavaScript(TypeScript)にはカリー化の機能は備わっていない。
+
+自分でカリー化する為の仕組みを構築する事も可能だが複雑になるので `Ramda` のような関数型プログラミングを後押しするライブラリを使うのが良いだろう。 
