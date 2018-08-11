@@ -1,4 +1,5 @@
 import * as R from "ramda";
+import { getLogger, configure } from "log4js";
 import { Students } from "../domain/types/Students";
 import { Student } from "../domain/types/Student";
 
@@ -107,4 +108,31 @@ export namespace Chapter4 {
       return store.find(ssn);
     }
   );
+
+  /**
+   * @param {string} level
+   * @param message
+   */
+  export const logger = (level: string, message: any) => {
+    configure({
+      appenders: {
+        out: {
+          type: "stdout",
+          layout: {
+            type: "coloured"
+          }
+        }
+      },
+      categories: {
+        default: {
+          level,
+          appenders: ["out"]
+        }
+      }
+    });
+
+    const logger = getLogger("javascript-fp");
+
+    logger.log(level, message);
+  };
 }
