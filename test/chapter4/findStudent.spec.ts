@@ -2,6 +2,7 @@ import { Chapter4 } from "src/chapter4/Chapter4";
 
 /**
  * 第4章 モジュール化によるコードの再利用のテスト
+ * カリー化を利用した関数ファクトリの実装
  */
 describe("Chapter4.findStudent", () => {
   /**
