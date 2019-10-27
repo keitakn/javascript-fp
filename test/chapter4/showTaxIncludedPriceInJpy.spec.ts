@@ -5,7 +5,7 @@ import { showTaxIncludedPriceInJpy } from 'src/chapter4/Chapter4';
  *
  * 関数パイプラインの利用
  */
-describe('Chapter4.findStudent', () => {
+describe('Chapter4.showTaxIncludedPriceInJpy', () => {
   /**
    * 税込み価格が表示される事をテスト
    */
