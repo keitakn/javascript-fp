@@ -1,3 +1,3 @@
-import { Student } from "./Student";
+import { Student } from './Student';
 
 export type Students = Student[];

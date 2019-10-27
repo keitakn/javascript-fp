@@ -1,4 +1,4 @@
-import { Person } from "./Person";
+import { Person } from './Person';
 
 /**
  * 学生を表すオブジェクトIF
