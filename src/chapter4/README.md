@@ -20,6 +20,65 @@
 
 しかし関数パイプラインはメソッドチェーンよりも緩い結合なのでより柔軟性がある。
 
+このコードは `ramda.pipe` を利用した関数パイプラインのサンプルコードである。
+
+```typescript jsx
+import * as R from 'ramda';
+
+const validatePrice = (price: number): number => {
+  if (!Number.isInteger(price)) {
+    return 0;
+  }
+
+  if (price < 100) {
+    return 0;
+  }
+
+  return price;
+};
+
+const calculateTaxIncludedPrice = (price: number): number => {
+  const tax = 1.1;
+
+  return price * tax;
+};
+
+const showPriceInJpy = (price: number): string => {
+  const formatter = new Intl.NumberFormat('ja-JP');
+
+  return `¥${formatter.format(price)}`;
+};
+
+export const showTaxIncludedPriceInJpy = (price: number): string => {
+  const composed = R.pipe<
+    number,
+    ReturnType<typeof validatePrice>,
+    ReturnType<typeof calculateTaxIncludedPrice>,
+    ReturnType<typeof showPriceInJpy>
+  >(
+    validatePrice,
+    calculateTaxIncludedPrice,
+    showPriceInJpy,
+  );
+
+  return composed(price);
+};
+```
+
+`showTaxIncludedPriceInJpy(1000)` とすると出力結果は `¥1,100` となる。
+
+引数で渡した `1000` が validatePrice -> calculateTaxIncludedPrice -> showPriceInJpyの順に適応されている事が分かる。
+
+しかしこのコードにはまだ問題点がある。
+
+validatePriceの実装が不自然になっている。
+
+Boolean型が返りそうなのに数値で返している。
+
+かと言って、 `true`, `false` を返すと関数パイプラインが崩れてしまう。
+
+このようなケースでどのように対処するかは次回以降の章で説明する。
+
 ## タプル(tuple)
 
 関数型言語はタプルと呼ばれる構造に対応している。
