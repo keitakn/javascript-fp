@@ -241,3 +241,49 @@ console.log(identity<User>(testUser));
 - カプセル化した型からデータを関数的に抽出する。
 
 [こちら](https://codeday.me/jp/qa/20190503/767039.html) のブログが参考になる。
+
+### tap（Kコンビネータ）
+
+void型関数を合成に対して橋渡しするのに便利。
+
+`Ramda` の `R.tap` を利用すると良いだろう。
+
+```typescript
+const debugLog = _.partial(logger, 'console', 'basic', 'MyLogger', 'DEBUG');
+const debug = R.tap(debugLog);
+const cleanInput = R.compose(normalize,debug,trim);
+const isValidSsn = R.compose(debug,checkLengthSsn,debug,cleanInput);
+```
+
+debugを（R.tapに基づいて）呼び出しても、プログラムの結果は一切変わらない。
+
+### alternation（ORコンビネータ）
+
+関数呼び出しに応えて既存の振る舞いを提供する際に、簡単な条件付きロジックを実行する関数。
+
+```typescript
+const alt = function(func1, func2) {
+  return function (val) {
+    return func1(val) || func2(val);
+  }
+}
+```
+
+`Ramda` を使えば以下のように実装出来る。
+
+```typescript
+const alt = R.curry((func1, func2, val) => func1(val) || func2(val));
+```
+
+取得処理が失敗したときに、新しいオブジェクトを作成するような実装が可能になる。
+
+### sequence（Sコンビネータ）
+
+一連の複数の関数をループするために使用される関数。
+
+値を返さない。合成に追加したい場合は、 `R.tap` を利用する。
+
+### fork(join)コンビネータ
+
+1個のリソースを2通りの異なる方法で処理して、その結果を結合するのに利用される。
+
