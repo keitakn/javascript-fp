@@ -197,3 +197,47 @@ console.log(plus10(1));
 JavaScript(TypeScript)にはカリー化の機能は備わっていない。
 
 自分でカリー化する為の仕組みを構築する事も可能だが複雑になるので `Ramda` のような関数型プログラミングを後押しするライブラリを使うのが良いだろう。 
+
+## 関数コンビネータ
+
+関数型言語にはif-elseやfor等の手続き型の制御構文が存在しない。
+
+その為、関数コンビネータという概念を利用する。
+
+JavaScript(TypeScript)は純粋な関数型言語ではないので、if-elseやforを利用する事はもちろん可能。
+
+JavaScript(TypeScript)には関数コンビネータは存在しないので、自分で実装するかライブラリを利用する必要がある。
+
+### identityコンビネータ
+
+与えられた引数と同じ値を返す関数。
+
+TypeScriptで実装するとこんな感じになる。
+
+```typescript
+export const identity = <T>(value: T): T => {
+  return value;
+};
+
+// 利用する場合
+type User = {
+  email: string;
+  name: string;
+};
+
+const testUser: User = {
+  email: 'test@gmail.com',
+  name: 'TestUser'
+};
+
+console.log(identity<User>(testUser));
+// { email: 'test@gmail.com', name: 'TestUser' }
+```
+
+関数の数学的な性質を調べるために広く使用されているが、実用的な用途として以下のような物がある。
+
+- 引数となる関数を評価する際に、引数を期待する高階関数にデータを与える。これは以前、ポイントフリーコードを記述する際に行ったとおりに実施する
+- 関数コンビネータのフローに対してユニットテストを行う。これはアサーションを行うために簡単な関数の結果が必要な場合である。たとえば、恒等関数を使用するcompose関数に関してユニットテストを記述することができる。
+- カプセル化した型からデータを関数的に抽出する。
+
+[こちら](https://codeday.me/jp/qa/20190503/767039.html) のブログが参考になる。

@@ -194,3 +194,7 @@ export const showTaxIncludedPriceInJpy = (price: number): string => {
 
   return composed(price);
 };
+
+export const identity = <T>(value: T): T => {
+  return value;
+};
