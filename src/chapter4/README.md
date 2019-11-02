@@ -20,6 +20,65 @@
 
 しかし関数パイプラインはメソッドチェーンよりも緩い結合なのでより柔軟性がある。
 
+このコードは `ramda.pipe` を利用した関数パイプラインのサンプルコードである。
+
+```typescript jsx
+import * as R from 'ramda';
+
+const validatePrice = (price: number): number => {
+  if (!Number.isInteger(price)) {
+    return 0;
+  }
+
+  if (price < 100) {
+    return 0;
+  }
+
+  return price;
+};
+
+const calculateTaxIncludedPrice = (price: number): number => {
+  const tax = 1.1;
+
+  return price * tax;
+};
+
+const showPriceInJpy = (price: number): string => {
+  const formatter = new Intl.NumberFormat('ja-JP');
+
+  return `¥${formatter.format(price)}`;
+};
+
+export const showTaxIncludedPriceInJpy = (price: number): string => {
+  const composed = R.pipe<
+    number,
+    ReturnType<typeof validatePrice>,
+    ReturnType<typeof calculateTaxIncludedPrice>,
+    ReturnType<typeof showPriceInJpy>
+  >(
+    validatePrice,
+    calculateTaxIncludedPrice,
+    showPriceInJpy,
+  );
+
+  return composed(price);
+};
+```
+
+`showTaxIncludedPriceInJpy(1000)` とすると出力結果は `¥1,100` となる。
+
+引数で渡した `1000` が validatePrice -> calculateTaxIncludedPrice -> showPriceInJpyの順に適応されている事が分かる。
+
+しかしこのコードにはまだ問題点がある。
+
+validatePriceの実装が不自然になっている。
+
+Boolean型が返りそうなのに数値で返している。
+
+かと言って、 `true`, `false` を返すと関数パイプラインが崩れてしまう。
+
+このようなケースでどのように対処するかは次回以降の章で説明する。
+
 ## タプル(tuple)
 
 関数型言語はタプルと呼ばれる構造に対応している。
@@ -138,3 +197,93 @@ console.log(plus10(1));
 JavaScript(TypeScript)にはカリー化の機能は備わっていない。
 
 自分でカリー化する為の仕組みを構築する事も可能だが複雑になるので `Ramda` のような関数型プログラミングを後押しするライブラリを使うのが良いだろう。 
+
+## 関数コンビネータ
+
+関数型言語にはif-elseやfor等の手続き型の制御構文が存在しない。
+
+その為、関数コンビネータという概念を利用する。
+
+JavaScript(TypeScript)は純粋な関数型言語ではないので、if-elseやforを利用する事はもちろん可能。
+
+JavaScript(TypeScript)には関数コンビネータは存在しないので、自分で実装するかライブラリを利用する必要がある。
+
+### identityコンビネータ
+
+与えられた引数と同じ値を返す関数。
+
+TypeScriptで実装するとこんな感じになる。
+
+```typescript
+export const identity = <T>(value: T): T => {
+  return value;
+};
+
+// 利用する場合
+type User = {
+  email: string;
+  name: string;
+};
+
+const testUser: User = {
+  email: 'test@gmail.com',
+  name: 'TestUser'
+};
+
+console.log(identity<User>(testUser));
+// { email: 'test@gmail.com', name: 'TestUser' }
+```
+
+関数の数学的な性質を調べるために広く使用されているが、実用的な用途として以下のような物がある。
+
+- 引数となる関数を評価する際に、引数を期待する高階関数にデータを与える。これは以前、ポイントフリーコードを記述する際に行ったとおりに実施する
+- 関数コンビネータのフローに対してユニットテストを行う。これはアサーションを行うために簡単な関数の結果が必要な場合である。たとえば、恒等関数を使用するcompose関数に関してユニットテストを記述することができる。
+- カプセル化した型からデータを関数的に抽出する。
+
+[こちら](https://codeday.me/jp/qa/20190503/767039.html) のブログが参考になる。
+
+### tap（Kコンビネータ）
+
+void型関数を合成に対して橋渡しするのに便利。
+
+`Ramda` の `R.tap` を利用すると良いだろう。
+
+```typescript
+const debugLog = _.partial(logger, 'console', 'basic', 'MyLogger', 'DEBUG');
+const debug = R.tap(debugLog);
+const cleanInput = R.compose(normalize,debug,trim);
+const isValidSsn = R.compose(debug,checkLengthSsn,debug,cleanInput);
+```
+
+debugを（R.tapに基づいて）呼び出しても、プログラムの結果は一切変わらない。
+
+### alternation（ORコンビネータ）
+
+関数呼び出しに応えて既存の振る舞いを提供する際に、簡単な条件付きロジックを実行する関数。
+
+```typescript
+const alt = function(func1, func2) {
+  return function (val) {
+    return func1(val) || func2(val);
+  }
+}
+```
+
+`Ramda` を使えば以下のように実装出来る。
+
+```typescript
+const alt = R.curry((func1, func2, val) => func1(val) || func2(val));
+```
+
+取得処理が失敗したときに、新しいオブジェクトを作成するような実装が可能になる。
+
+### sequence（Sコンビネータ）
+
+一連の複数の関数をループするために使用される関数。
+
+値を返さない。合成に追加したい場合は、 `R.tap` を利用する。
+
+### fork(join)コンビネータ
+
+1個のリソースを2通りの異なる方法で処理して、その結果を結合するのに利用される。
+

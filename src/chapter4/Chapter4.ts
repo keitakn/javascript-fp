@@ -133,3 +133,68 @@ export const logger = (level: string, message: string | Error) => {
 
   logger.log(level, message);
 };
+
+/**
+ * 価格を検証する
+ *
+ * 実装が関数の名前と合っていないが、パイプラインのテストを単純化する為、あえてこうしてある
+ *
+ * @param price
+ */
+const validatePrice = (price: number): number => {
+  if (!Number.isInteger(price)) {
+    return 0;
+  }
+
+  if (price < 100) {
+    return 0;
+  }
+
+  return price;
+};
+
+/**
+ * 税込み価格を計算する
+ *
+ * @param price
+ */
+const calculateTaxIncludedPrice = (price: number): number => {
+  const tax = 1.1;
+
+  return price * tax;
+};
+
+/**
+ * 日本円形式で価格を表示する
+ *
+ * @param price
+ */
+const showPriceInJpy = (price: number): string => {
+  const formatter = new Intl.NumberFormat('ja-JP');
+
+  return `¥${formatter.format(price)}`;
+};
+
+/**
+ * 日本円形式で税込み価格を表示する
+ *
+ * @param price
+ */
+export const showTaxIncludedPriceInJpy = (price: number): string => {
+  const composed = R.pipe<
+    number,
+    ReturnType<typeof validatePrice>,
+    ReturnType<typeof calculateTaxIncludedPrice>,
+    ReturnType<typeof showPriceInJpy>
+  >(
+    validatePrice,
+    calculateTaxIncludedPrice,
+    showPriceInJpy,
+  );
+
+  return composed(price);
+};
+
+export const identity = <T>(value: T): T => {
+  return value;
+};
