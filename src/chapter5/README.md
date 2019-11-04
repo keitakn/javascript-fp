@@ -137,5 +137,166 @@ jQueryの一部の特性としてモナドの性質を備えている理由は�
 
 ちなみに `Promise` ベースの [Fluture](https://www.npmjs.com/package/fluture) というライブラリはモナドインターフェイスになっている模様。
 
+## モナドの種類
 
+モナドには様々な種類が存在する。
 
+ここでは代表的な種類を紹介する。
+
+### 恒等モナド
+
+最も簡単なモナドで値をラップするだけ。
+
+常に同じ型で返ってくるので、各関数のインターフェースを統一出来る。
+
+### Maybeモナド
+
+恒等モナドと似ているが、値を格納するだけでなく、値が存在しない状態を表すことも可能。
+
+`Just` という値をラップする際に利用するデータ型と `Nothing` という空の値を表現するデータ型が存在する。
+
+`Swift` の `Optional` や `Scala` の `Option` はMaybeモナドの実装と言えるだろう。
+
+### Eitherモナド
+
+失敗系と成功系を表現するモナド。
+
+後でこのモナドを利用して第4章で作成した `showTaxIncludedPriceInJpy` を再実装してみる事にしよう。
+
+## JavaScript（TypeScript）でのモナドライブラリ
+
+言語仕様としてモナドは実装されていない為、自分で実装を行うかライブラリの力を借りる必要がある。
+
+筆者のオススメは [fp-ts](https://github.com/gcanti/fp-ts) である。
+
+`Haskell`, `PureScript`, `Scala` 等の関数型パラダイムの言語を参考に開発されているのもあって、その他のライブラリよりも利用されている印象。
+
+### Eitherモナドを利用した `showTaxIncludedPriceInJpy` の再実装
+
+少し長いが下記のようになる。
+
+```typescript
+import { pipe } from 'ramda';
+import { Either, left, right, toError } from 'fp-ts/lib/Either';
+
+export const Try = <T>(fn: () => T): Either<Error, T> => {
+  try {
+    const result = fn();
+
+    return right(result);
+  } catch (error) {
+    return left(toError(error));
+  }
+};
+
+const validatePrice = (price: Either<Error, number>): Either<Error, number> => {
+  return Try<number>(() => {
+    if (price._tag === 'Left') {
+      throw price.left;
+    }
+
+    if (!Number.isInteger(price.right)) {
+      throw new Error('price is Not Number!');
+    }
+
+    if (price.right < 100) {
+      throw new Error('The price should specify more than 100!');
+    }
+
+    return price.right;
+  });
+};
+
+const calculateTaxIncludedPrice = (price: Either<Error, number>): Either<Error, number> => {
+  return Try<number>(() => {
+    const tax = 1.1;
+
+    if (price._tag === 'Left') {
+      throw price.left;
+    }
+
+    return price.right * tax;
+  });
+};
+
+const showPriceInJpy = (price: Either<Error, number>): Either<Error, string> => {
+  return Try<string>(() => {
+    const formatter = new Intl.NumberFormat('ja-JP');
+
+    if (price._tag === 'Left') {
+      throw price.left;
+    }
+
+    return `¥${formatter.format(price.right)}`;
+  });
+};
+
+export const showTaxIncludedPriceInJpy = (price: number): Either<Error, string> => {
+  const composed = pipe<
+    Either<Error, number>,
+    ReturnType<typeof validatePrice>,
+    ReturnType<typeof calculateTaxIncludedPrice>,
+    ReturnType<typeof showPriceInJpy>
+  >(
+    validatePrice,
+    calculateTaxIncludedPrice,
+    showPriceInJpy,
+  );
+
+  const eitherPrice = Try<number>(() => {
+    return price;
+  });
+
+  return composed(eitherPrice);
+};
+```
+
+まず最初に `Try` という関数を定義する。
+
+この関数は処理の成功時に `right` にその結果を、例外が発生した際に `left` に `Error` を格納して返す。
+
+返り値はEitherモナドとなり以下のようになる。
+
+```
+// 処理成功時
+{ _tag: 'Right', right: '¥1,100' }
+
+// 例外発生時
+{ _tag: 'Left',
+  left:
+   Error: The price should specify more than 100!
+       at exports.Try (/Users/kogakeita/gitrepos/javascript-fp/src/chapter5/Chapter5.ts:33:13)
+       at Object.<anonymous>.exports.Try.fn [as Try] (/Users/kogakeita/gitrepos/javascript-fp/src/chapter5/Chapter5.ts:6:20)
+       at validatePrice (/Users/kogakeita/gitrepos/javascript-fp/src/chapter5/Chapter5.ts:23:10)
+       at /Users/kogakeita/gitrepos/javascript-fp/node_modules/ramda/src/internal/_pipe.js:3:27
+       at /Users/kogakeita/gitrepos/javascript-fp/node_modules/ramda/src/internal/_pipe.js:3:27
+       at /Users/kogakeita/gitrepos/javascript-fp/node_modules/ramda/src/internal/_arity.js:10:19
+       at Object.<anonymous>.exports.showTaxIncludedPriceInJpy.price [as showTaxIncludedPriceInJpy] (/Users/kogakeita/gitrepos/javascript-fp/src/chapter5/Chapter5.ts:80:10)
+       at Object.it (/Users/kogakeita/gitrepos/javascript-fp/test/chapter5/monad.spec.ts:18:26)
+       at Object.asyncJestTest (/Users/kogakeita/gitrepos/javascript-fp/node_modules/jest-jasmine2/build/jasmineAsyncInstall.js:102:37)
+       at resolve (/Users/kogakeita/gitrepos/javascript-fp/node_modules/jest-jasmine2/build/queueRunner.js:43:12)
+       at new Promise (<anonymous>)
+       at mapper (/Users/kogakeita/gitrepos/javascript-fp/node_modules/jest-jasmine2/build/queueRunner.js:26:19)
+       at promise.then (/Users/kogakeita/gitrepos/javascript-fp/node_modules/jest-jasmine2/build/queueRunner.js:73:41)
+       at process._tickCallback (internal/process/next_tick.js:68:7) }
+```
+
+これらの関数をパイプラインで合成する際には1つ注意点がある。
+
+もし `_tag` の値が `Left` だった場合は例外が発生しているので、下記のように `left` に入っているErrorをThrowする。
+
+```
+const calculateTaxIncludedPrice = (price: Either<Error, number>): Either<Error, number> => {
+  return Try<number>(() => {
+    const tax = 1.1;
+
+    if (price._tag === 'Left') {
+      throw price.left;
+    }
+
+    return price.right * tax;
+  });
+};
+```
+
+こうする事でどこで関数パイプラインを壊さないでどこで例外が発生しているか、分かるようになる。
