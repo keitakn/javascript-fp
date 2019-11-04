@@ -300,3 +300,87 @@ const calculateTaxIncludedPrice = (price: Either<Error, number>): Either<Error, 
 ```
 
 こうする事でどこで関数パイプラインを壊さないでどこで例外が発生しているか、分かるようになる。
+
+非同期処理の場合は `TryAsync` を利用する。
+
+```typescript
+import { pipeP } from 'ramda';
+import { Either, left, right, toError } from 'fp-ts/lib/Either';
+import axios, { AxiosError, AxiosResponse } from 'axios';
+
+export const TryAsync = async <T>(
+  fn: () => Promise<T>,
+): Promise<Either<Error, T>> => {
+  return fn()
+    .then(v => right<Error, T>(v))
+    .catch(error => left<Error, T>(toError(error)));
+};
+
+export const httpClient = axios.create({
+  baseURL: 'https://qiita.com',
+  timeout: 10000,
+});
+
+type QiitaUser = {
+  id: string;
+};
+
+const fetchQiitaUser = async (qiitaUser: QiitaUser) => {
+  return TryAsync<QiitaUser>(() => {
+    return httpClient
+      .get<QiitaUser>(`/api/v2/users/${qiitaUser.id}`)
+      .then((axiosResponse: AxiosResponse) => {
+        return Promise.resolve(axiosResponse.data);
+      })
+      .catch((axiosError: AxiosError) => {
+        // このような握りつぶしは良くないが動作確認を単純化する為にこうしておく
+        return Promise.reject(new Error(axiosError.message));
+      });
+  });
+};
+
+type QiitaFollowingTag = {
+  id: string;
+};
+
+const fetchQiitaUserFollowingTags = async (
+  qiitaUser: Either<Error, QiitaUser>,
+) => {
+  return TryAsync<QiitaFollowingTag[]>(async () => {
+    if (qiitaUser._tag === 'Left') {
+      return Promise.reject(qiitaUser.left);
+    }
+
+    return httpClient
+      .get<QiitaFollowingTag[]>(
+        `/api/v2/users/${qiitaUser.right.id}/following_tags`,
+      )
+      .then((axiosResponse: AxiosResponse) => {
+        const tags = axiosResponse.data.map(
+          (qiitaFollowingTag: QiitaFollowingTag) => {
+            return { id: qiitaFollowingTag.id };
+          },
+        );
+
+        return Promise.resolve(tags);
+      })
+      .catch((axiosError: AxiosError) => {
+        return Promise.reject(axiosError);
+      });
+  });
+};
+
+export const fetchFollowingTags = async (
+  userId: string,
+): Promise<Either<Error, QiitaUser[]>> => {
+  /* eslint @typescript-eslint/no-explicit-any: 0 */
+  const composed = pipeP<any, any, any>(
+    fetchQiitaUser,
+    fetchQiitaUserFollowingTags,
+  );
+
+  return composed({ id: userId });
+};
+```
+
+このようにすれば先程と同じように関数合成が可能だ。

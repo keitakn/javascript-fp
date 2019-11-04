@@ -1,5 +1,6 @@
-import { pipe } from 'ramda';
+import { pipe, pipeP } from 'ramda';
 import { Either, left, right, toError } from 'fp-ts/lib/Either';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 export const Try = <T>(fn: () => T): Either<Error, T> => {
   try {
@@ -84,4 +85,70 @@ export const showTaxIncludedPriceInJpy = (
   });
 
   return composed(eitherPrice);
+};
+
+export const httpClient = axios.create({
+  baseURL: 'https://qiita.com',
+  timeout: 10000,
+});
+
+type QiitaUser = {
+  id: string;
+};
+
+const fetchQiitaUser = async (qiitaUser: QiitaUser) => {
+  return TryAsync<QiitaUser>(() => {
+    return httpClient
+      .get<QiitaUser>(`/api/v2/users/${qiitaUser.id}`)
+      .then((axiosResponse: AxiosResponse) => {
+        return Promise.resolve(axiosResponse.data);
+      })
+      .catch((axiosError: AxiosError) => {
+        // このような握りつぶしは良くないが動作確認を単純化する為にこうしておく
+        return Promise.reject(new Error(axiosError.message));
+      });
+  });
+};
+
+type QiitaFollowingTag = {
+  id: string;
+};
+
+const fetchQiitaUserFollowingTags = async (
+  qiitaUser: Either<Error, QiitaUser>,
+) => {
+  return TryAsync<QiitaFollowingTag[]>(async () => {
+    if (qiitaUser._tag === 'Left') {
+      return Promise.reject(qiitaUser.left);
+    }
+
+    return httpClient
+      .get<QiitaFollowingTag[]>(
+        `/api/v2/users/${qiitaUser.right.id}/following_tags`,
+      )
+      .then((axiosResponse: AxiosResponse) => {
+        const tags = axiosResponse.data.map(
+          (qiitaFollowingTag: QiitaFollowingTag) => {
+            return { id: qiitaFollowingTag.id };
+          },
+        );
+
+        return Promise.resolve(tags);
+      })
+      .catch((axiosError: AxiosError) => {
+        return Promise.reject(axiosError);
+      });
+  });
+};
+
+export const fetchFollowingTags = async (
+  userId: string,
+): Promise<Either<Error, QiitaUser[]>> => {
+  /* eslint @typescript-eslint/no-explicit-any: 0 */
+  const composed = pipeP<any, any, any>(
+    fetchQiitaUser,
+    fetchQiitaUserFollowingTags,
+  );
+
+  return composed({ id: userId });
 };
